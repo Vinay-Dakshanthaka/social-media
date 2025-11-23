@@ -1,0 +1,8 @@
+create a folder social-media
+mkdir social-media
+
+cd social-media
+
+git init 
+
+git pull origin https://github.com/Vinay-Dakshanthaka/social-media.git
