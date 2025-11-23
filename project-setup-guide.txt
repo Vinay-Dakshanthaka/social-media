@@ -9,6 +9,11 @@ git pull origin https://github.com/Vinay-Dakshanthaka/social-media.git
 
 
 
+To get the latest changes use 
+
+git pull origin master
+
+
 ================ HOW TO RUN  ============================
 
 -----------------------BACKEND------------------
