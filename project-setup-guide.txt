@@ -6,3 +6,38 @@ cd social-media
 git init 
 
 git pull origin https://github.com/Vinay-Dakshanthaka/social-media.git
+
+
+
+================ HOW TO RUN  ============================
+
+-----------------------BACKEND------------------
+
+cd /social-media/backend
+
+npm i 
+
+npm start 
+
+you should be able to see this message 
+
+✔ Database "social_media_db" ready (created if missing)
+✔ Sequelize tables synchronized
+ Server running on port 5000
+
+
+
+-------------------------FRONTEND------------------------------
+
+cd /social-media/frontend/ui
+
+npm i 
+
+npm run dev 
+
+you will see this URL 
+
+ http://localhost:5173/
+
+
+open the above url in any browser you will see a login page 
