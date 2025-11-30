@@ -23,13 +23,16 @@ const Signup = () => {
     setLoading(true);
 
     try {
+      // API call to register user — backend sends verification email
       await axios.post("http://localhost:5000/api/auth/register", formData);
 
-      toast.success("Account created successfully ");
+      toast.success(
+        "Account created! Please check your email to verify your account."
+      );
 
       setTimeout(() => {
         window.location.href = "/login";
-      }, 1200);
+      }, 1500);
     } catch (err) {
       toast.error(err.response?.data?.message || "Signup failed!");
     }
@@ -41,11 +44,10 @@ const Signup = () => {
     <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900 px-4">
       <div className="bg-white dark:bg-gray-800 p-8 w-full max-w-md rounded-2xl shadow-xl transition-all">
         <h2 className="text-2xl font-bold text-center dark:text-white">
-          Create Account 
+          Create Account
         </h2>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-
           {/* First Name */}
           <div>
             <label className="dark:text-gray-300 font-semibold">First Name</label>

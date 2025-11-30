@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const express = require('express');
+const express = require("express");
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mysql = require("mysql2/promise");    // IMPORTANT
@@ -37,7 +37,7 @@ async function createDatabaseIfNotExists() {
         });
 
         await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\`;`);
-
+    
         console.log(`✔ Database "${process.env.DB_NAME}" ready (created if missing)`);
         await connection.end();
     } catch (err) {
@@ -52,7 +52,7 @@ async function createDatabaseIfNotExists() {
 async function startServer() {
     await createDatabaseIfNotExists();
 
-    db.sequelize.sync({ force: false })
+    db.sequelize.sync({ alter: true })
         .then(() => {
             console.log("✔ Sequelize tables synchronized");
 

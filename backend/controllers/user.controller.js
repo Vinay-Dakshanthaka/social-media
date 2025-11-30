@@ -1,11 +1,11 @@
 // controllers/user.controller.js
 const { User } = require('../models');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 
 module.exports = {
 
   // CREATE USER (Admin Creates)
-  createUser: async (req, res) => {
+  CreateUser: async (req, res) => {
     try {
       const { firstName, lastName, email, phone, role, password } = req.body;
 

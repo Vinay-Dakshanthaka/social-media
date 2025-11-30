@@ -2,7 +2,9 @@ import React from "react";
 
 const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem("user"));
+    const role = user.role; 
 
+  console.log("role  :", role)
   if (!user) {
     return (
       <div className="flex justify-center items-center h-screen text-xl">

@@ -1,33 +1,43 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api", // Base URL for your backend
+  baseURL: "http://localhost:5000/api", // Your backend base URL
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// ---- Attach JWT token automatically ----
+// -----------------------------
+//  Automatically attach JWT Token
+// -----------------------------
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// ---- Global response error handler ----
+// -----------------------------
+//  Global Response Handler
+// -----------------------------
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If token expired / unauthorized → logout user
+    // Handle unauthorized and expired token
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      // Redirect to login
       window.location.href = "/login";
     }
+
     return Promise.reject(error);
   }
 );

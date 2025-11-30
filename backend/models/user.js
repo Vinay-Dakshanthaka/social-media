@@ -19,7 +19,11 @@ module.exports = (sequelize, DataTypes) => {
     isApproved: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     inviteToken: { type: DataTypes.STRING(128), allowNull: true },
     inviteTokenExpiresAt: { type: DataTypes.DATE, allowNull: true },
-
+    isVerified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    
+    emailVerificationToken: { type: DataTypes.STRING(128), allowNull: true },
+    emailVerificationExpiresAt: { type: DataTypes.DATE, allowNull: true },
+    
     // security
     twoFactorEnabled: { type: DataTypes.BOOLEAN, defaultValue: false },
 

@@ -1,82 +1,108 @@
 import React, { useState } from "react";
 import { login } from "../api/authService";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { toast } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setErrorMsg("");
 
     try {
-      await login({ email, password });
-      alert("Login Successful!");
+      const res = await login({ email, password });
 
-      // redirect after login
-      window.location.href = "/dashboard";
+      // Save token & user in localStorage
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      toast.success("Login Successful");
+
+      const role = res.data.user.role;
+
+      // Redirect based on role
+      if (role === "ADMIN") {
+        setTimeout(() => {
+          window.location.href = "/admin"; // Admin dashboard
+        }, 1200);
+      } else {
+        setTimeout(() => {
+          window.location.href = "/dashboard"; // Student/staff dashboard
+        }, 1200);
+      }
+
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || "Invalid email or password");
+      toast.error(err.response?.data?.message || "Invalid email or password");
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div className="card shadow p-4" style={{ width: "380px" }}>
-        <h3 className="text-center mb-3">Login</h3>
+    <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 w-full max-w-sm">
+        <h2 className="text-2xl font-bold text-center dark:text-white">
+          Login
+        </h2>
 
-        {errorMsg && (
-          <div className="alert alert-danger py-2">{errorMsg}</div>
-        )}
-
-        <form onSubmit={handleLogin}>
-          <div className="mb-3">
-            <label className="form-label fw-semibold">Email</label>
+        <form onSubmit={handleLogin} className="mt-6 space-y-5">
+          {/* Email Field */}
+          <div>
+            <label className="text-gray-700 dark:text-gray-200 font-medium">
+              Email
+            </label>
             <input
               type="email"
-              className="form-control"
-              placeholder="Enter your email"
-              required
+              className="mt-1 px-4 py-2 w-full border rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-100 dark:bg-gray-700 dark:text-white outline-none transition"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="Enter your email"
             />
           </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-semibold">Password</label>
+          {/* Password Field */}
+          <div className="relative">
+            <label className="text-gray-700 dark:text-gray-200 font-medium">
+              Password
+            </label>
             <input
-              type="password"
-              className="form-control"
-              placeholder="Enter password"
-              required
+              type={showPassword ? "text" : "password"}
+              className="mt-1 px-4 py-2 w-full border rounded-xl focus:ring-2 focus:ring-blue-500 bg-gray-100 dark:bg-gray-700 dark:text-white outline-none transition"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="Enter your password"
             />
+            <button
+              type="button"
+              className="absolute right-3 top-9 text-gray-500 dark:text-gray-300"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
 
+          {/* Submit Button */}
           <button
-            className="btn btn-primary w-100 mt-2"
             type="submit"
             disabled={loading}
+            className="w-full py-2 font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 transition text-white shadow-md"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <div className="mt-3 text-center">
-          <small>
-            Don’t have an account?{" "}
-            <a href="/register" className="text-primary">
-              Create one
-            </a>
-          </small>
-        </div>
+        <p className="text-sm text-center mt-4 dark:text-gray-300">
+          Don’t have an account?{" "}
+          <a href="/register" className="text-blue-600 font-medium">
+            Sign Up
+          </a>
+        </p>
       </div>
     </div>
   );
