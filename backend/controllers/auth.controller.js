@@ -76,7 +76,7 @@
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const { User } = require("../models");
-const { sendVerificationEmail } = require("../utils/email");
+const { sendVerificationEmail, sendRevokeEmail } = require("../utils/email");
 const { sendApprovalEmail } = require("../utils/email");
 const jwt = require("jsonwebtoken")
 
@@ -279,9 +279,44 @@ const approveUser = async (req, res, next) => {
   }
 };
 
+const revokeUser = async (req, res, next) => {
+  try {
+    const userId = parseInt(req.params.userId, 10);
+    if (!userId) return res.status(400).json({ message: "Invalid user id." });
+
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ message: "User not found." });
+
+    if (!user.isApproved && !user.isActive) {
+      return res.status(200).json({ message: "User already revoked." });
+    }
+
+    // Update user access flags
+    user.isApproved = false;
+    user.isActive = false;
+    await user.save();
+
+    // Send revoke email (best effort)
+    try {
+      const name = user.firstName || user.email;
+      await sendRevokeEmail(user.email, name);
+    } catch (emailErr) {
+      console.warn(
+        "Revoke email failed to send:",
+        emailErr?.message || emailErr
+      );
+    }
+
+    return res.json({ message: "User access revoked and notification sent." });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   register,
   login,
   verifyEmail,
-  approveUser
+  approveUser,
+  revokeUser
 };

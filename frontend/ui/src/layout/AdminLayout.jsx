@@ -286,7 +286,7 @@ import React from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { LogOut } from "lucide-react";
 
-const AdminLayout = () => {
+const AdminLayout = ({children}) => {
   const location = useLocation();
 
   const logout = () => {
@@ -339,8 +339,8 @@ const AdminLayout = () => {
       </aside>
 
       {/* MAIN CONTENT */}
-      <main className="flex-1 p-6 ml-64">
-        <Outlet />
+      <main className="flex-1 p-6">
+        {/* <Outlet /> */} {children}
       </main>
 
     </div>

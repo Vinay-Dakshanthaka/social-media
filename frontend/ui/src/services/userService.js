@@ -1,5 +1,5 @@
 import axiosInstance from "..api/axiosInstance";
 
-export const createUser = (data) => {
+export const CreateUser = (data) => {
   return axiosInstance.post("/users", data);
 };
