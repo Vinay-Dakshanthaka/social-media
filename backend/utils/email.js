@@ -60,7 +60,29 @@ async function sendApprovalEmail(to, name, loginLink = "") {
   return transporter.sendMail(mailOptions);
 }
 
+async function sendRevokeEmail(to, name) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height:1.6;">
+      <h2>Hello ${name},</h2>
+      <p>We want to inform you that your account access has been <strong>revoked</strong> by the administrator.</p>
+      <p>You will no longer be able to log in or access the application.</p>
+      <p>If you believe this is a mistake or want more information, please contact admin.</p>
+    </div>
+  `;
+
+  const mailOptions = {
+    from: process.env.EMAIL_FROM || process.env.FROM_EMAIL,
+    to,
+    subject: "Your account access has been revoked",
+    html,
+  };
+
+  return transporter.sendMail(mailOptions);
+}
+
+
 module.exports = {
   sendVerificationEmail,
-  sendApprovalEmail
+  sendApprovalEmail,
+  sendRevokeEmail
 };

@@ -52,7 +52,7 @@ async function createDatabaseIfNotExists() {
 async function startServer() {
     await createDatabaseIfNotExists();
 
-    db.sequelize.sync({ alter: true })
+    db.sequelize.sync({ alter: false})
         .then(() => {
             console.log("✔ Sequelize tables synchronized");
 

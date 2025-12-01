@@ -21,7 +21,9 @@ const router = express.Router();
 const {
   register,
   verifyEmail,
-  login
+  login,
+  approveUser,
+  revokeUser
 } = require("../controllers/auth.controller");  // MUST MATCH EXACT FILE NAME
 
 router.post('/login', login);
@@ -31,5 +33,11 @@ router.post("/register", register);
 
 // VERIFY EMAIL
 router.get("/verify/:token", verifyEmail);
+
+//Approve
+router.put("/approve/:userId", approveUser );
+
+//Revoke
+router.put("/revoke/:userId", revokeUser);
 
 module.exports = router;

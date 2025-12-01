@@ -105,14 +105,14 @@ const AdminDashboard = () => {
             onClick={bulkApprove}
             className="bg-blue-600 px-5 py-2 text-white rounded-lg hover:bg-blue-700"
           >
-            Approve Selected
+            Approve
           </button>
 
           <button
             onClick={bulkRevoke}
             className="bg-red-600 px-5 py-2 text-white rounded-lg hover:bg-red-700"
           >
-            Revoke Selected
+            Revoke
           </button>
         </div>
       </div>
