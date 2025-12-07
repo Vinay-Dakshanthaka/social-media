@@ -21,6 +21,11 @@ app.use(cors(corsOptions));
 
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
+app.use("/api/albums", require("./routes/album.routes"));
+app.use("/api", require("./routes/media.routes"));
+app.use("/api/permissions", require("./routes/permission.routes"));
+app.use("/api/groups", require("./routes/group.routes"));
+
 
 
 const PORT = process.env.PORT || 5000;

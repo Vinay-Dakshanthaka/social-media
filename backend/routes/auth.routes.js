@@ -16,15 +16,17 @@
 
 const express = require("express");
 const router = express.Router();
-
+const { User } = require("../models");
 
 const {
   register,
   verifyEmail,
   login,
   approveUser,
-  revokeUser
+  revokeUser,
+  updatePassword,
 } = require("../controllers/auth.controller");  // MUST MATCH EXACT FILE NAME
+const authMiddleware = require("../middleware/auth.middleware");
 
 router.post('/login', login);
 
@@ -39,5 +41,23 @@ router.put("/approve/:userId", approveUser );
 
 //Revoke
 router.put("/revoke/:userId", revokeUser);
+
+//update
+router.post("/update-password", authMiddleware , updatePassword);
+
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, {
+      attributes: ["id", "firstName","lastName", "email", "role"]
+    });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 
 module.exports = router;

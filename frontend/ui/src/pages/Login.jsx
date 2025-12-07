@@ -17,17 +17,17 @@ const Login = () => {
       const res = await login({ email, password });
 
       // Save token & user in localStorage
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
 
       toast.success("Login Successful");
 
-      const role = res.data.user.role;
+      const role = res.user.role;
 
       // Redirect based on role
       if (role === "ADMIN") {
         setTimeout(() => {
-          window.location.href = "/admin"; // Admin dashboard
+          window.location.href = "/dashboard"; // Admin dashboard
         }, 1200);
       } else {
         setTimeout(() => {

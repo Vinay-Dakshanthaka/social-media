@@ -72,13 +72,15 @@
 //     }
 //   }
 // };
-
+// require("dotenv").config();
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const { User } = require("../models");
 const { sendVerificationEmail, sendRevokeEmail } = require("../utils/email");
 const { sendApprovalEmail } = require("../utils/email");
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const {VerificationToken} = require("../models");
+// const verificationToken = require("../models/verificationToken");
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -124,8 +126,9 @@ const login = async (req, res) => {
       id: user.id,
       email: user.email,
       firstName: user.firstName,
-      role: user.role
-    }
+      role: user.role,
+      forcePasswordChange: user.forcePasswordChange,
+    },
   });
 };
 
@@ -143,8 +146,8 @@ const register = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const token = crypto.randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 60 * 60 * 1000); 
+    // const token = crypto.randomBytes(32).toString("hex");
+    // const expires = new Date(Date.now() + 60 * 60 * 1000); 
 
     // Create user with unverified status
     const user = await User.create({
@@ -157,21 +160,22 @@ const register = async (req, res) => {
       isApproved: false,   // admin approval after verification
       role: "STUDENT",
       isVerified: false,
-      emailVerificationToken: token,
-      emailVerificationExpiresAt: expires
+      // twoFactorEnabled: true
     });
 
     // Create verification token
-    // const token = crypto.randomBytes(32).toString("hex");
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date (Date.now() + 60 * 60 * 1000); // 1 hour expiry
 
-    // await VerificationToken.create({
-    //   token,
-    //   userId: user.id,
-    //   expiresAt: new Date(Date.now() + 60 * 60 * 1000) // 1 hour expiry
-    // });
+    await VerificationToken.create({
+      token,
+      userId: user.id,
+      expiresAt,
+      type: "email_verification"
+    });
 
     // Verification link
-    const verifyLink = `${process.env.FRONTEND_BASE_URL}/api/auth/verify/${token}`;
+    const verifyLink = `${process.env.BACKEND_BASE_URL}/api/auth/verify/${token}`;
 
     console.log("email verify link : ", verifyLink)
 
@@ -201,40 +205,27 @@ const verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
 
-    // const record = await VerificationToken.findOne({
-    //   where: { token },
-    //   include: User
-    // });
-
-    // if (!record) {
-    //   return res.status(400).send("Invalid or expired verification token.");
-    // }
-
-    // if (record.expiresAt < new Date()) {
-    //   await record.destroy();
-    //   return res.status(400).send("Verification token expired.");
-    // }
-
-     const user = await User.findOne({
-      where: { emailVerificationToken: token }
+    const record = await VerificationToken.findOne({
+      where: { token },
+      include:[{ model: User, as:"user"}]
     });
 
-    if (!user)
-      return res.status(400).send("Invalid or expired verification link.");
+    if (!record) {
+      return res.status(400).send("Invalid or expired verification token.");
+    }
 
-    if (user.emailVerificationExpiresAt < new Date())
-      return res.status(400).send("Verification link expired.");
+    if (record.expiresAt < new Date()) {
+      await record.destroy();
+      return res.status(400).send("Verification token expired.");
+    }
 
     // mark user verified
-    // const user = record.User;
+    const user = record.user;
     user.isVerified = true;
     user.isActive = true; // allow login after verification
-    user.emailVerificationToken = null;
-    user.emailVerificationExpiresAt = null;
     await user.save();
-
-    // remove used token
-    // await record.destroy();
+    
+    await record.destroy();
 
     return res.send(
       "<h2>Email Verified</h2><p>Your account is now verified. Admin will approve your account shortly.</p>"
@@ -312,11 +303,46 @@ const revokeUser = async (req, res, next) => {
     next(err);
   }
 };
+  
+// UPDATE PASSWORD
+const updatePassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: "Both fields are required" });
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const match = await bcrypt.compare(oldPassword, user.passwordHash);
+    if (!match) {
+      return res.status(400).json({ message: "Old password incorrect" });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await User.update(
+      { passwordHash: hashed, forcePasswordChange: false },
+      { where: { id: userId } }
+    );
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 
 module.exports = {
   register,
   login,
   verifyEmail,
   approveUser,
-  revokeUser
+  revokeUser,
+  updatePassword
 };
