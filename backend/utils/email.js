@@ -1,8 +1,8 @@
 const nodemailer = require("nodemailer");
-
+require("dotenv").config();
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || "587", 10),
+  port: parseInt(process.env.SMTP_PORT || "587"),
   secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_USER,
@@ -51,7 +51,7 @@ async function sendApprovalEmail(to, name, loginLink = "") {
   `;
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM,
+    from: process.env.FROM_EMAIL,
     to,
     subject: "Your account has been approved",
     html,
@@ -71,7 +71,7 @@ async function sendRevokeEmail(to, name) {
   `;
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || process.env.FROM_EMAIL,
+    from: process.env.FROM_EMAIL,
     to,
     subject: "Your account access has been revoked",
     html,
@@ -80,9 +80,49 @@ async function sendRevokeEmail(to, name) {
   return transporter.sendMail(mailOptions);
 }
 
+async function sendAdminCreatedUserEmail(to, { name, email, role, password, loginLink }) {
+  const html = `
+    <div style="font-family: Arial; line-height:1.6;">
+      <h2>Hello ${name},</h2>
+
+      <p>Your account has been <strong>created and approved</strong> by the administrator.</p>
+
+      <p><strong>Account Details:</strong></p>
+      <ul>
+        <li><strong>Name:</strong> ${name}</li>
+        <li><strong>Email:</strong> ${email}</li>
+        <li><strong>Role:</strong> ${role}</li>
+        <li><strong>Password:</strong> ${password}</li>
+      </ul>
+
+      <p style="color:red;"><strong>⚠ IMPORTANT:</strong> Please change your password immediately after logging in.</p>
+
+      <p>
+        <a href="${loginLink}" 
+           style="background-color:#1a73e8;color:white;padding:10px 20px;text-decoration:none;border-radius:6px;">
+           Login Now
+        </a>
+      </p>
+
+      <hr>
+      <p style="font-size:12px;color:gray;">If you did not expect this email, please contact admin.</p>
+    </div>
+  `;
+
+  return transporter.sendMail({
+    from: process.env.FROM_EMAIL,
+    to,
+    subject: "Your New Account Details",
+    html,
+  });
+}
 
 module.exports = {
   sendVerificationEmail,
   sendApprovalEmail,
-  sendRevokeEmail
+  sendRevokeEmail,
+  sendAdminCreatedUserEmail
 };
+
+
+

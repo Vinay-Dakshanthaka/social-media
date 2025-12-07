@@ -1,5 +1,6 @@
 "use strict";
 
+require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const Sequelize = require("sequelize");
@@ -46,6 +47,7 @@ Object.keys(db).forEach((modelName) => {
         db[modelName].associate(db);
     }
 });
+
 
 // Export Sequelize connection + all models
 db.sequelize = sequelize;

@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     // authentication
     email: { type: DataTypes.STRING(255), allowNull: false, unique: true },
     passwordHash: { type: DataTypes.STRING(255) }, // null for invited/SSO accounts
-    role: { type: DataTypes.ENUM('PRINCIPAL','HOD','ADMIN','STUDENT','PARENT'), allowNull: false, defaultValue: 'STUDENT' },
+    role: { type: DataTypes.ENUM('PRINCIPAL','HOD','ADMIN','STAFF','STUDENT','PARENT'), allowNull: false, defaultValue: 'STUDENT' },
 
     // profile
     firstName: { type: DataTypes.STRING(100) },
@@ -20,9 +20,14 @@ module.exports = (sequelize, DataTypes) => {
     inviteToken: { type: DataTypes.STRING(128), allowNull: true },
     inviteTokenExpiresAt: { type: DataTypes.DATE, allowNull: true },
     isVerified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
-    
-    emailVerificationToken: { type: DataTypes.STRING(128), allowNull: true },
-    emailVerificationExpiresAt: { type: DataTypes.DATE, allowNull: true },
+
+    forcePasswordChange: {
+  type: DataTypes.BOOLEAN,
+  allowNull: false,
+  defaultValue: true,
+  field: "forcePasswordChange" 
+},
+
     
     // security
     twoFactorEnabled: { type: DataTypes.BOOLEAN, defaultValue: false },

@@ -9,6 +9,8 @@ const UserTable = ({
   onRevoke,
   onRoleChange,
   roles,
+  loadingApprove,
+  loadingRevoke,
 }) => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md mt-6 overflow-x-auto">
@@ -84,21 +86,46 @@ const UserTable = ({
 
                 {/* ACTION BUTTONS */}
                 <td className="p-3 flex gap-2">
+
+                  {/* --- APPROVE BUTTON (Pending users) --- */}
                   {!user.isApproved ? (
                     <button
                       onClick={() => onApprove(user.id)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                      disabled={loadingApprove === user.id}
+                      className={`px-3 py-1 rounded text-white w-24 flex justify-center items-center
+                        ${
+                          loadingApprove === user.id
+                            ? "bg-blue-400 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700"
+                        }`}
                     >
-                      Approve
+                      {loadingApprove === user.id ? (
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                      ) : (
+                        "Approve"
+                      )}
                     </button>
+
                   ) : (
+                    /* --- REVOKE BUTTON (Approved users) --- */
                     <button
                       onClick={() => onRevoke(user.id)}
-                      className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                      disabled={loadingRevoke === user.id}
+                      className={`px-3 py-1 rounded text-white w-24 flex justify-center items-center
+                        ${
+                          loadingRevoke === user.id
+                            ? "bg-red-400 cursor-not-allowed"
+                            : "bg-red-600 hover:bg-red-700"
+                        }`}
                     >
-                      Revoke
+                      {loadingRevoke === user.id ? (
+                        <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                      ) : (
+                        "Revoke"
+                      )}
                     </button>
                   )}
+
                 </td>
               </tr>
             ))

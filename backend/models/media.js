@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     albumId: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
     uploadedById: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
 
-    type: { type: DataTypes.ENUM('PHOTO','VIDEO'), allowNull: false },
+    type: { type: DataTypes.ENUM('PHOTO','VIDEO','AUDIO','FILE'), allowNull: false },
     fileUrl: { type: DataTypes.STRING(2048), allowNull: false },       // S3 URL
     thumbnailUrl: { type: DataTypes.STRING(2048) },
     fileName: { type: DataTypes.STRING(500) },

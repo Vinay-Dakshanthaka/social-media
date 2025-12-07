@@ -1,5 +1,5 @@
-const crypto = require("crypto");
+// const crypto = require("crypto");
 
-exports.generateInviteToken = () => {
-  return crypto.randomBytes(32).toString("hex");
-};
+// exports.generateInviteToken = () => {
+//   return crypto.randomBytes(32).toString("hex");
+// };

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import AdminLayout from "../layout/AdminLayout";
 import UserTable from "../components/UserTable";
 import {
   getUsers,
@@ -7,9 +6,7 @@ import {
   revokeUser,
   updateRole,
 } from "../api/adminService";
-
 import { toast } from "react-toastify";
-// import { Sidebar } from "lucide-react";
 
 const roles = ["ADMIN", "PRINCIPAL", "HOD", "STAFF", "STUDENT"];
 
@@ -17,6 +14,12 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [selected, setSelected] = useState(new Set());
   const [search, setSearch] = useState("");
+
+  const [loadingApprove, setLoadingApprove] = useState(null);
+  const [loadingRevoke, setLoadingRevoke] = useState(null);
+
+  const [bulkLoadingApprove, setBulkLoadingApprove] = useState(false);
+  const [bulkLoadingRevoke, setBulkLoadingRevoke] = useState(false);
 
   const loadUsers = async () => {
     try {
@@ -44,29 +47,45 @@ const AdminDashboard = () => {
     else setSelected(new Set(users.map((u) => u.id)));
   };
 
+  // SINGLE APPROVE
+  const onApprove = async (id) => {
+    setLoadingApprove(id);
+    await approveUser(id);
+    toast.success("User approved");
+    setLoadingApprove(null);
+    loadUsers();
+  };
+
+  // SINGLE REVOKE
+  const onRevoke = async (id) => {
+    setLoadingRevoke(id);
+    await revokeUser(id);
+    toast.success("User revoked");
+    setLoadingRevoke(null);
+    loadUsers();
+  };
+
+  // BULK APPROVE
   const bulkApprove = async () => {
     if (selected.size === 0) return toast.warning("No users selected");
+
+    setBulkLoadingApprove(true);
     for (let id of selected) await approveUser(id);
+    setBulkLoadingApprove(false);
+
     toast.success("Approved selected users");
     loadUsers();
   };
 
+  // BULK REVOKE
   const bulkRevoke = async () => {
     if (selected.size === 0) return toast.warning("No users selected");
+
+    setBulkLoadingRevoke(true);
     for (let id of selected) await revokeUser(id);
+    setBulkLoadingRevoke(false);
+
     toast.success("Revoked selected users");
-    loadUsers();
-  };
-
-  const onApprove = async (id) => {
-    await approveUser(id);
-    toast.success("User approved");
-    loadUsers();
-  };
-
-  const onRevoke = async (id) => {
-    await revokeUser(id);
-    toast.success("User revoked");
     loadUsers();
   };
 
@@ -84,13 +103,9 @@ const AdminDashboard = () => {
   );
 
   return (
-    <AdminLayout>
+    <>
+      <h1 className="text-3xl font-bold dark:text-white mb-6">MANAGE STUDENTS</h1>
 
-      <h1 className="text-3xl font-bold dark:text-white mb-6">
-        Dashboard Overview
-      </h1>
-
-      {/* Search + Bulk Actions */}
       <div className="flex flex-col md:flex-row md:justify-between gap-4 mb-6">
         <input
           type="text"
@@ -103,21 +118,40 @@ const AdminDashboard = () => {
         <div className="flex gap-3">
           <button
             onClick={bulkApprove}
-            className="bg-blue-600 px-5 py-2 text-white rounded-lg hover:bg-blue-700"
+            disabled={bulkLoadingApprove}
+            className={`px-5 py-2 rounded-lg text-white ${
+              bulkLoadingApprove ? "bg-blue-400" : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            Approve
+            {bulkLoadingApprove ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                Approving...
+              </span>
+            ) : (
+              "Approve"
+            )}
           </button>
 
           <button
             onClick={bulkRevoke}
-            className="bg-red-600 px-5 py-2 text-white rounded-lg hover:bg-red-700"
+            disabled={bulkLoadingRevoke}
+            className={`px-5 py-2 rounded-lg text-white ${
+              bulkLoadingRevoke ? "bg-red-400" : "bg-red-600 hover:bg-red-700"
+            }`}
           >
-            Revoke
+            {bulkLoadingRevoke ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
+                Revoking...
+              </span>
+            ) : (
+              "Revoke"
+            )}
           </button>
         </div>
       </div>
 
-      {/* Users Table */}
       <UserTable
         users={filtered}
         selected={selected}
@@ -126,11 +160,11 @@ const AdminDashboard = () => {
         onApprove={onApprove}
         onRevoke={onRevoke}
         onRoleChange={onRoleChange}
-        roles={["ADMIN", "PRINCIPAL", "HOD", "STAFF", "STUDENT"]}
+        roles={roles}
+        loadingApprove={loadingApprove}
+        loadingRevoke={loadingRevoke}
       />
-
-    </AdminLayout>
-    
+    </>
   );
 };
 

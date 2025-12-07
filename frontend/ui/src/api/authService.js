@@ -1,26 +1,28 @@
 import axiosInstance from "./axiosInstance";
 
-// export const login = (data) => axiosInstance.post("/auth/login", data);
-
-// export const register = (data) => axiosInstance.post("/auth/register", data);
-
-
 //  Register User
-export const register = async (userData) => {
-  const response = await axiosInstance.post("/auth/register", userData);
+export const register = async (formData) => {
+  const response = await axiosInstance.post("/auth/register", formData);
   return response.data;
 };
 
-//  Login User
 export const login = async (credentials) => {
   const response = await axiosInstance.post("/auth/login", credentials);
-  // return axiosInstance.post("/auth/login", credentials);
 
-  // Save token to localStorage
-  if (response.data.token) {
-    localStorage.setItem("token", response.data.token);
+  if (response.token) {
+    localStorage.setItem("token", response.token);
+    localStorage.setItem("user", JSON.stringify(response.user));
   }
 
-  // return response.data;
-  return axiosInstance.post("/auth/login", credentials);
+  return response.data;
 };
+
+
+export const updatePassword = async (oldPassword, newPassword) => {
+  return axiosInstance.post("/auth/update-password", {
+    oldPassword,
+    newPassword,
+  });
+};
+
+

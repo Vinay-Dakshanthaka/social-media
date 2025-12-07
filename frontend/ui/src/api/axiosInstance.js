@@ -30,14 +30,18 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     // Handle unauthorized and expired token
-    if (error.response?.status === 401) {
+    // if (error.response?.status === 401) {
+    //   localStorage.removeItem("token");
+    //   localStorage.removeItem("user");
+
+    //   // Redirect to login
+    //   window.location.href = "/login";
+    // }
+     if (status === 401 && url !== "/auth/login") {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-
-      // Redirect to login
       window.location.href = "/login";
     }
-
     return Promise.reject(error);
   }
 );

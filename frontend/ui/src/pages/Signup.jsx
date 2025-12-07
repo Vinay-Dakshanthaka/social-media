@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import axios from "axios";
+// import axios from "axios";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
+import { register } from "../api/authService";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -24,7 +25,9 @@ const Signup = () => {
 
     try {
       // API call to register user — backend sends verification email
-      await axios.post("http://localhost:5000/api/auth/register", formData);
+      // await axios.post("http://localhost:5000/api/auth/register", formData);
+      await register(formData);
+
 
       toast.success(
         "Account created! Please check your email to verify your account."
