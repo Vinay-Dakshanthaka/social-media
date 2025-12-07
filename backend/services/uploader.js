@@ -178,58 +178,129 @@
 
 // services/uploader.js
 
+const { v4: uuidv4 } = require("uuid");
+const path = require("path");
 const {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
 } = require("@aws-sdk/client-s3");
+const { detectFileCategory } = require("../utils/detectFileCategory");
 
 require("dotenv").config();
+  
 
+// Initialize S3 client for DigitalOcean Spaces
 const s3 = new S3Client({
   region: process.env.DO_SPACES_REGION,
-  endpoint: process.env.DO_SPACES_ENDPOINT,
-  forcePathStyle: false,
+  endpoint: `https://${process.env.DO_SPACES_REGION}.digitaloceanspaces.com`,
   credentials: {
     accessKeyId: process.env.DO_SPACES_KEY,
     secretAccessKey: process.env.DO_SPACES_SECRET,
   },
 });
 
-// =========================
-// UPLOAD
-// =========================
-exports.uploadToSpaces = async (file) => {
+exports.uploadToSpaces = async (file, albumId, existingFileUrl = null) => {
   try {
     if (!file) throw new Error("File is required");
 
-    const remoteFileName = `albums/${file.originalname}`;
+    const clientName = process.env.CLIENT_NAME || "default_client";
+    const spaceName = process.env.DO_SPACES_NAME;
+    const region = process.env.DO_SPACES_REGION;
 
-    const params = {
-      Bucket: process.env.DO_SPACES_NAME,
-      Key: remoteFileName,
+    // Sanitize filename
+    const sanitizedName = file.originalname.replace(/\s+/g, "");
+
+    // Determine file category (image/video/audio/document)
+    const fileTypeFolder = detectFileCategory(file.mimetype);
+
+    // Date-based folder structure
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+
+    // Build file key
+    const fileKey = `${clientName}/albums/${albumId}/${fileTypeFolder}/${year}/${month}/${day}/${uuidv4()}_${sanitizedName}`;
+
+    // Upload parameters
+    const uploadParams = {
+      Bucket: spaceName,
+      Key: fileKey,
       Body: file.buffer,
       ACL: "public-read",
       ContentType: file.mimetype,
     };
 
-    await s3.send(new PutObjectCommand(params));
+    // Upload file to DigitalOcean Spaces
+    await s3.send(new PutObjectCommand(uploadParams));
 
-    // Build final URL
-    const cdn = process.env.DO_SPACES_CDN; // MUST include https://
-    const region = process.env.DO_SPACES_REGION;
-    const bucket = process.env.DO_SPACES_NAME;
+    // Construct file URL (CDN if enabled, otherwise direct Spaces URL)
+    let fileUrl;
+    if (process.env.DO_SPACES_CDN && process.env.DO_SPACES_CDN !== "false") {
+      // Make sure your CDN URL is set in .env like: DO_SPACES_CDN=https://your-cdn-endpoint
+      const cdnEndpoint = process.env.DO_SPACES_CDN.replace(/\/$/, ""); // remove trailing slash
+      fileUrl = `${cdnEndpoint}/${fileKey}`;
+    } else {
+      fileUrl = `https://${spaceName}.${region}.digitaloceanspaces.com/${fileKey}`;
+    }
 
-    let fileUrl = cdn
-      ? `${cdn}/${remoteFileName}`
-      : `https://${bucket}.${region}.digitaloceanspaces.com/${remoteFileName}`;
+    // Delete old file if updating
+    if (existingFileUrl) {
+      const oldKey = existingFileUrl.split(`.com/`)[1];
+      if (oldKey) {
+        await s3.send(new DeleteObjectCommand({
+          Bucket: spaceName,
+          Key: oldKey,
+        }));
+      }
+    }
 
     return fileUrl;
+
   } catch (err) {
     console.error("Upload error:", err);
-    throw new Error("Upload failed");
+    throw new Error("Upload to DigitalOcean failed");
   }
 };
+
+
+
+
+// =========================
+// UPLOAD
+// =========================
+// exports.uploadToSpaces = async (file) => {
+//   try {
+//     if (!file) throw new Error("File is required");
+
+//     const remoteFileName = `albums/${file.originalname}`;
+
+//     const params = {
+//       Bucket: process.env.DO_SPACES_NAME,
+//       Key: remoteFileName,
+//       Body: file.buffer,
+//       ACL: "public-read",
+//       ContentType: file.mimetype,
+//     };
+
+//     await s3.send(new PutObjectCommand(params));
+
+//     // Build final URL
+//     const cdn = process.env.DO_SPACES_CDN; // MUST include https://
+//     const region = process.env.DO_SPACES_REGION;
+//     const bucket = process.env.DO_SPACES_NAME;
+
+//     let fileUrl = cdn
+//       ? `${cdn}/${remoteFileName}`
+//       : `https://${bucket}.${region}.digitaloceanspaces.com/${remoteFileName}`;
+
+//     return fileUrl;
+//   } catch (err) {
+//     console.error("Upload error:", err);
+//     throw new Error("Upload failed");
+//   }
+// };
 
 // =========================
 // DELETE

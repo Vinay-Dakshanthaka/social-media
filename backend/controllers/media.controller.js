@@ -1,6 +1,7 @@
 const { Media } = require("../models");
 const { uploadToSpaces } = require("../services/uploader");
 const { canAccess } = require("../services/access.service");
+const { detectFileCategory } = require("../utils/detectFileCategory");
 
 function detectType(mime) {
   if (mime.startsWith("image")) return "PHOTO";
@@ -31,12 +32,12 @@ exports.uploadMedia = async (req, res) => {
   let uploaded = [];
 
   for (const file of req.files) {
-    const fileUrl = await uploadToSpaces(file);
+    const fileUrl = await uploadToSpaces(file, albumId);
 
     const media = await Media.create({
       albumId,
       uploadedById: req.user.id,
-      type: detectType(file.mimetype),
+      type: detectFileCategory(file.mimetype),
       fileUrl,
       fileName: file.originalname,
       mimeType: file.mimetype,
@@ -46,8 +47,15 @@ exports.uploadMedia = async (req, res) => {
     uploaded.push(media);
   }
 
-  res.json(uploaded);
+  res.json({
+    message: "Files uploaded successfully",
+    count: uploaded.length,
+    files: uploaded
+  });
 };
+
+
+
 
 // DELETE media
 exports.remove = async (req, res) => {
