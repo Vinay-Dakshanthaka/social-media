@@ -5,7 +5,9 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mysql = require("mysql2/promise");    // IMPORTANT
 const db = require('./models');             // Sequelize models
-
+const swaggerUi = require("swagger-ui-express");
+const swaggerDocs = require("./swagger");
+const swaggerSpec = require('./swagger');
 const app = express();
 
 // Middleware
@@ -50,6 +52,13 @@ async function createDatabaseIfNotExists() {
         process.exit(1);
     }
 }
+app.get("/swagger.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
+
+// Optional: serve Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 /**
  *  Start server only after DB is created + Sequelize synced
