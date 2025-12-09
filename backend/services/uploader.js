@@ -264,44 +264,6 @@ exports.uploadToSpaces = async (file, albumId, existingFileUrl = null) => {
   }
 };
 
-
-
-
-// =========================
-// UPLOAD
-// =========================
-// exports.uploadToSpaces = async (file) => {
-//   try {
-//     if (!file) throw new Error("File is required");
-
-//     const remoteFileName = `albums/${file.originalname}`;
-
-//     const params = {
-//       Bucket: process.env.DO_SPACES_NAME,
-//       Key: remoteFileName,
-//       Body: file.buffer,
-//       ACL: "public-read",
-//       ContentType: file.mimetype,
-//     };
-
-//     await s3.send(new PutObjectCommand(params));
-
-//     // Build final URL
-//     const cdn = process.env.DO_SPACES_CDN; // MUST include https://
-//     const region = process.env.DO_SPACES_REGION;
-//     const bucket = process.env.DO_SPACES_NAME;
-
-//     let fileUrl = cdn
-//       ? `${cdn}/${remoteFileName}`
-//       : `https://${bucket}.${region}.digitaloceanspaces.com/${remoteFileName}`;
-
-//     return fileUrl;
-//   } catch (err) {
-//     console.error("Upload error:", err);
-//     throw new Error("Upload failed");
-//   }
-// };
-
 // =========================
 // DELETE
 // =========================

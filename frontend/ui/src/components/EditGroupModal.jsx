@@ -143,7 +143,7 @@ export default function EditGroupModal({ open, onClose, group, onSave }) {
 
       toast.success("Group updated successfully!");
 
-      onSave(); // This reloads the list (parent)
+      // onSave(); // This reloads the list (parent)
       onClose(); // Close modal
     } catch (err) {
       console.error(err);

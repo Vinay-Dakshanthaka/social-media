@@ -1,4 +1,4 @@
-export function detectFileCategory(mimeType) {
+function detectFileCategory(mimeType) {
   if (!mimeType) return "UNKNOWN";
 
   const type = mimeType.toLowerCase();
@@ -32,3 +32,5 @@ export function detectFileCategory(mimeType) {
 
   return "UNKNOWN";
 };
+
+module.exports = { detectFileCategory };

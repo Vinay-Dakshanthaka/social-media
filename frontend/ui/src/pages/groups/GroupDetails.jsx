@@ -40,8 +40,9 @@ export default function GroupDetails() {
       const memberUserId =
         m.userId ??
         m.user_id ??
-        m.userID ??
-        m.user?.id;
+        // m.userID ??
+        // m.user?.id;
+        (m.user && m.user.id);
 
       return Number(memberUserId) === Number(userId);
     });
@@ -70,7 +71,7 @@ export default function GroupDetails() {
   };
 
   const handleAdd = async (userId) => {
-    await addGroupMember(id, { userId });
+    await addGroupMember(id,  userId );
     toast.success("Member added");
     load();
   };
@@ -86,7 +87,7 @@ export default function GroupDetails() {
     if (toAdd.length === 0) return toast.warn("No new users selected");
 
     for (let uid of toAdd) {
-      await addGroupMember(id, { userId: uid });
+      await addGroupMember(id,  uid );
     }
 
     toast.success("Selected users added");

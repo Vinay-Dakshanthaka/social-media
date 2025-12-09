@@ -1,7 +1,7 @@
 // src/components/albums/AlbumForm.jsx
 import React, { useEffect, useState } from "react";
 import { createAlbum, getAlbumById, updateAlbum } from "../../api/albumService";
-import { fetchGroups } from "../../api/groupService";
+import { fetchGroups, fetchGroupDetails } from "../../api/groupService"; // <-- add this
 import { toast } from "react-toastify";
 
 const emptyForm = {
@@ -19,7 +19,7 @@ const emptyForm = {
 
 export default function AlbumForm({ album, onSaved }) {
   const [form, setForm] = useState(emptyForm);
-  const [groups, setGroups] = useState([]); // <-- new state
+  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const isEdit = Boolean(album?.id);
@@ -27,7 +27,7 @@ export default function AlbumForm({ album, onSaved }) {
   useEffect(() => {
     (async () => {
       try {
-        // Load Album When Editing
+        // Load Album when editing
         if (isEdit) {
           const data = await getAlbumById(album.id);
           setForm({
@@ -46,7 +46,7 @@ export default function AlbumForm({ album, onSaved }) {
           setForm(emptyForm);
         }
 
-        // Load Groups
+        // Load Groups for dropdown
         const groupList = await fetchGroups();
         setGroups(groupList);
       } catch (err) {
@@ -56,6 +56,7 @@ export default function AlbumForm({ album, onSaved }) {
     })();
   }, [album, isEdit]);
 
+  // Generic change handler
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm((prev) => ({
@@ -63,6 +64,41 @@ export default function AlbumForm({ album, onSaved }) {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+
+  // If you prefer, you can keep handleChange as-is and
+  // add a special handler only for group change:
+  const handleGroupChange = (e) => {
+    const { value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      groupId: value,
+    }));
+  };
+
+  // When groupId changes, fetch its details and autofill album fields
+  useEffect(() => {
+    if (!form.groupId) return; // "-- No Group --" selected
+
+    (async () => {
+      try {
+        const group = await fetchGroupDetails(form.groupId);
+
+        // Adjust these mappings based on your actual group schema
+        setForm((prev) => ({
+          ...prev,
+          // keep existing values if group doesn't have them
+          year: group.year || prev.year,
+          department: group.department || prev.department,
+          visibility: "GROUP", // if albums linked to group should always be group-visible
+          // you could also auto-fill title, event, etc. if you want:
+          // title: prev.title || group.name,
+        }));
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load group details");
+      }
+    })();
+  }, [form.groupId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,7 +122,6 @@ export default function AlbumForm({ album, onSaved }) {
 
   return (
     <form className="space-y-4 max-w-xl" onSubmit={handleSubmit}>
-      
       {/* Title */}
       <div>
         <label className="block text-xs text-gray-500 mb-1">Title *</label>
@@ -113,7 +148,6 @@ export default function AlbumForm({ album, onSaved }) {
 
       {/* Grid */}
       <div className="grid md:grid-cols-2 gap-4">
-
         {/* Album Type */}
         <div>
           <label className="block text-xs text-gray-500 mb-1">Album Type</label>
@@ -187,10 +221,9 @@ export default function AlbumForm({ album, onSaved }) {
             name="groupId"
             className="w-full border rounded-md px-2 py-1 text-sm"
             value={form.groupId}
-            onChange={handleChange}
+            onChange={handleGroupChange}
           >
             <option value="">-- No Group --</option>
-
             {groups.map((group) => (
               <option key={group.id} value={group.id}>
                 {group.name}
@@ -231,7 +264,6 @@ export default function AlbumForm({ album, onSaved }) {
       >
         {loading ? "Saving..." : isEdit ? "Update Album" : "Create Album"}
       </button>
-
     </form>
   );
 }

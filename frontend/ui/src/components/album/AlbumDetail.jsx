@@ -143,6 +143,7 @@ export default function AlbumDetail({ album, currentUser }) {
               {isAdminOrStaff(currentUser?.role) ? (
                 <select
                   value={albumData.visibility || "GROUP"}
+                  disabled
                   onChange={async (e) => {
                     try {
                       const updated = await updateAlbum(album.id, {
@@ -233,6 +234,7 @@ export default function AlbumDetail({ album, currentUser }) {
                 {isAdminOrStaff(currentUser?.role) && (
                   <select
                     value={m.visibility || "GROUP"}
+                    disabled
                     className="border rounded-md text-[10px] px-1 py-0.5 mt-1"
                     onChange={async (e) => {
                       try {
